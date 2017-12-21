@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +16,7 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 
@@ -58,15 +58,18 @@ public class HomeController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String testService() {
 		return "Hello - from boot service" + "\n" 
-				+ "http://localhost:8080/putfile?bucketName=<NAME>&objectKey=<KEY>&region=<REGION>" + "\n"
+				+ "http://localhost:8080/putfile?bucketName=<NAME>&objectKey=<KEY>&region=<REGION>&sse=<true/false>" + "\n"
 				+ "http://localhost:8080/getfile?bucketName=<NAME>&objectKey=<KEY>&region=<REGION>" + "\n"
 				+ "http://localhost:8080/deletefile?bucketName=<NAME>&objectKey=<KEY>&region=<REGION>"+ "\n";
 	}
 	
+	
+	
+	
 	@ResponseBody
 	@RequestMapping(path="putfile", method = RequestMethod.GET)
 	public String putObjectOverGet(@RequestParam(name = "bucketName") String bucket_name,
-			@RequestParam(name = "objectKey") String object_key, @RequestParam(name = "region") String region) {
+			@RequestParam(name = "objectKey") String object_key, @RequestParam(name = "region") String region, @RequestParam(name = "sse", defaultValue = "false") Boolean sseEncryption) {
 		System.out.format("Putting object to S3 bucket: %s of region: %s \n", object_key, bucket_name,region);
 		final AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(region).build();
 		File file = new File("temp"+Math.random());
@@ -77,7 +80,14 @@ public class HomeController {
 				e.printStackTrace();
 				return e.getMessage();
 			}
-			s3.putObject(new PutObjectRequest(bucket_name, object_key , file));
+			PutObjectRequest request = new PutObjectRequest(bucket_name, object_key , file);
+			if (sseEncryption) {
+				System.out.format("Adding encryption header");
+				ObjectMetadata objectMetadata = new ObjectMetadata();
+				objectMetadata.setSSEAlgorithm(ObjectMetadata.AES_256_SERVER_SIDE_ENCRYPTION);     
+				request.setMetadata(objectMetadata);
+			}
+			s3.putObject(request);
 			file.delete();
 			System.out.format("Put object %s from S3 bucket: %s of region: %s\n", object_key, bucket_name,region);
 			return "Successfully put the key";

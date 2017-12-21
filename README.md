@@ -9,9 +9,9 @@
  - Sample output:
  `
 Hello - from boot service
-http://localhost:8080/putfile?bucketName=<NAME>&objectKey=<KEY>&region=<REGION>
-http://localhost:8080/getfile?bucketName=<NAME>&objectKey=<KEY>&region=<REGION>
-http://localhost:8080/deletefile?bucketName=<NAME>&objectKey=<KEY>&region=<REGION>
+http://localhost:8080/putfile?bucketName=&lt;NAME&gt;&objectKey=&lt;KEY&gt;&region=&lt;REGION&gt;&sse=<true/false> <br>
+http://localhost:8080/getfile?bucketName=&lt;NAME&gt;&objectKey=&lt;KEY&gt;&region=&lt;REGION&gt; <br>
+http://localhost:8080/deletefile?bucketName=&lt;NAME&gt;&objectKey=&lt;KEY&gt;&region=&lt;REGION&gt; <br>
  
  `
  
